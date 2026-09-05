@@ -1,35 +1,24 @@
-import os
-import json
-from langchain_anthropic import ChatAnthropic
-from langchain_core.prompts import ChatPromptTemplate
+import os, json, anthropic
 
+# イベントデータの読み込み
 event_path = os.environ.get("GITHUB_EVENT_PATH")
 with open(event_path, "r") as f:
     event_data = json.load(f)
 
-issue_title = event_data["issue"]["title"]
-issue_body = event_data["issue"]["body"] or ""
+# Claude公式クライアントの初期化
+client = anthropic.Anthropic()
 
-# Claudeモデルの指定（Anthropic公式ライブラリ）
-llm = ChatAnthropic(model="claude-3-5-haiku-20241022", temperature=0)
+# コード生成リクエスト
+response = client.messages.create(
+    model="claude-3-5-haiku-20241022",
+    max_tokens=1000,
+    system="あなたは優秀なプログラマーです。ユーザーのリクエストに基づいてPythonコードのみを出力してください。解説やMarkdownのコードブロック(```)は含めず、純粋なコードのみを返してください。",
+    messages=[
+        {"role": "user", "content": f"タイトル: {event_data['issue']['title']}\n詳細: {event_data['issue']['body'] or ''}"}
+    ]
+)
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "あなたは優秀なプログラマーです。ユーザーのリクエストに基づいてPythonコードのみを出力してください。解説やMarkdownのコードブロック(```)は含めず、純粋なコードのみを返してください。"),
-    ("user", "タイトル: {title}\n詳細: {body}")
-])
-
-chain = prompt | llm
-res = chain.invoke({"title": issue_title, "body": issue_body}).content
-
-# 返り値の処理
-if isinstance(res, list):
-    generated_code = "".join([str(item) for item in res])
-else:
-    generated_code = str(res)
-
-generated_code = generated_code.replace("```python", "").replace("```", "").strip()
-
+# 生成されたコードの保存
+generated_code = response.content[0].text.replace("```python", "").replace("```", "").strip()
 with open("generated_output.py", "w") as f:
     f.write(generated_code)
-
-print("Claude AI coding completed.")
