@@ -1,4 +1,6 @@
-import os, json, anthropic
+import os
+import json
+import anthropic
 
 # イベントデータの読み込み
 event_path = os.environ.get("GITHUB_EVENT_PATH")
@@ -8,9 +10,9 @@ with open(event_path, "r") as f:
 # Claude公式クライアントの初期化
 client = anthropic.Anthropic()
 
-# コード生成リクエスト
+# 最新のHaikuモデルに変更
 response = client.messages.create(
-    model="claude-3-5-haiku-20241022",
+    model="claude-3-5-haiku-latest",
     max_tokens=1000,
     system="あなたは優秀なプログラマーです。ユーザーのリクエストに基づいてPythonコードのみを出力してください。解説やMarkdownのコードブロック(```)は含めず、純粋なコードのみを返してください。",
     messages=[
@@ -22,3 +24,5 @@ response = client.messages.create(
 generated_code = response.content[0].text.replace("```python", "").replace("```", "").strip()
 with open("generated_output.py", "w") as f:
     f.write(generated_code)
+
+print("Claude AI coding completed.")
