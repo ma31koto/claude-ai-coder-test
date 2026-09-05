@@ -8,9 +8,9 @@ with open(event_path, "r") as f:
 
 client = anthropic.Anthropic()
 
-# 最新モデルを指定
+# 安定して動作する基本モデルIDを指定
 response = client.messages.create(
-    model="claude-3-7-sonnet-latest",
+    model="claude-3-haiku-20240307",
     max_tokens=1000,
     system="あなたは優秀なプログラマーです。ユーザーのリクエストに基づいてPythonコードのみを出力してください。解説やMarkdownのコードブロック(```)は含めず、純粋なコードのみを返してください。",
     messages=[
