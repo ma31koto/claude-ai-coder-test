@@ -2,17 +2,15 @@ import os
 import json
 import anthropic
 
-# イベントデータの読み込み
 event_path = os.environ.get("GITHUB_EVENT_PATH")
 with open(event_path, "r") as f:
     event_data = json.load(f)
 
-# Claude公式クライアントの初期化
 client = anthropic.Anthropic()
 
-# 最新のHaikuモデルに変更
+# 最新モデルを指定
 response = client.messages.create(
-    model="claude-3-5-haiku-latest",
+    model="claude-3-7-sonnet-latest",
     max_tokens=1000,
     system="あなたは優秀なプログラマーです。ユーザーのリクエストに基づいてPythonコードのみを出力してください。解説やMarkdownのコードブロック(```)は含めず、純粋なコードのみを返してください。",
     messages=[
@@ -20,7 +18,6 @@ response = client.messages.create(
     ]
 )
 
-# 生成されたコードの保存
 generated_code = response.content[0].text.replace("```python", "").replace("```", "").strip()
 with open("generated_output.py", "w") as f:
     f.write(generated_code)
